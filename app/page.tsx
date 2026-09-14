@@ -60,7 +60,21 @@ export default function HomePage() {
     const data = await response.json();
     if (!response.ok) { window.alert(data.error || "تعذر حفظ الحجز"); return; }
     const code = data.booking?.request_code || "";
-    const message = "السلام عليكم، تم تسجيل طلب حجز حقيقي.%0Aرقم الطلب: " + code + "%0Aالاسم: " + form.fullName + "%0Aالهاتف: " + form.phone + "%0Aالتاريخ: " + form.date + "%0Aالوقت: " + form.time;
+    const bookingDate = new Date(`${form.date}T12:00:00`);
+    const weekdays = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+    const weekday = weekdays[bookingDate.getDay()];
+    const formattedDate = bookingDate.toLocaleDateString("ar-IQ");
+    const selectedSlot = slots.find((slot) => slot.value === form.time);
+    const message = `السلام عليكم دكتور
+
+حجز يوم ${weekday}
+التاريخ: ${formattedDate}
+الساعة: ${selectedSlot?.label || form.time}
+
+اسم المراجع: ${form.fullName}
+رقم الهاتف: ${form.phone}
+رقم الطلب: ${code}${form.purpose ? `
+الغرض من الجلسة: ${form.purpose}` : ""}`;
     setSent(true);
     openWhatsApp(message);
   };
