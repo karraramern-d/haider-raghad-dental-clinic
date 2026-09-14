@@ -39,7 +39,8 @@ export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [sent, setSent] = useState(false);
-  const [form, setForm] = useState({ fullName: "", phone: "", date: "", time: "", patientType: "new", purpose: "" });\n  const [availability, setAvailability] = useState<Record<string,string>>({});
+  const [form, setForm] = useState({ fullName: "", phone: "", date: "", time: "", patientType: "new", purpose: "" });
+  const [availability, setAvailability] = useState<Record<string,string>>({});
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const minDate = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
@@ -49,7 +50,9 @@ export default function HomePage() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  useEffect(() => { if (!form.date) return; fetch(`/api/availability?date=${encodeURIComponent(form.date)}`).then(r => r.json()).then(data => { const next: Record<string,string> = {}; for (const slot of data.slots ?? []) next[String(slot.start_time).slice(0,5)] = slot.status; setAvailability(next); }).catch(() => setAvailability({})); }, [form.date]);\n\n  const openWhatsApp = (message: string) => window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+  useEffect(() => { if (!form.date) return; fetch(`/api/availability?date=${encodeURIComponent(form.date)}`).then(r => r.json()).then(data => { const next: Record<string,string> = {}; for (const slot of data.slots ?? []) next[String(slot.start_time).slice(0,5)] = slot.status; setAvailability(next); }).catch(() => setAvailability({})); }, [form.date]);
+
+  const openWhatsApp = (message: string) => window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   const submitBooking = async (event: React.FormEvent) => {
     event.preventDefault();
     const response = await fetch("/api/bookings", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(form) });
