@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./hero-wide.css";
 
 export const metadata: Metadata = {
   title: "عيادة الدكتور حيدر رغد | طب الأسنان",
