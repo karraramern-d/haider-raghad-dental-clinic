@@ -1,0 +1,32 @@
+/* Mobile hero visual: widen the existing image container without changing the source image. */
+@media (max-width: 800px) {
+  .hero-visual {
+    width: calc(100% + 24px);
+    margin-inline: -12px;
+  }
+
+  .hero-frame {
+    width: 100%;
+    max-width: none;
+    aspect-ratio: 1.18 / 1;
+    border-radius: 30px;
+  }
+
+  .hero-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+}
+
+@media (max-width: 430px) {
+  .hero-visual {
+    width: calc(100% + 20px);
+    margin-inline: -10px;
+  }
+
+  .hero-frame {
+    border-radius: 26px;
+  }
+}
