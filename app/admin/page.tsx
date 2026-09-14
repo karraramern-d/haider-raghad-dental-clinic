@@ -6,7 +6,7 @@ import "./admin.css";
 type Patient={id:string;fullName:string;phone:string;age?:number;medicalCondition?:string;visitCount:number;totalPaid:number};
 type RecordData={patient:{full_name:string;display_phone:string};profile:{age?:number;medical_condition?:string;doctor_notes?:string;prescribed_treatment?:string};visits:Array<{id:string;session_number:number;visit_date:string;treatment:string;notes:string;status:string;amount_iqd:number}>;photos?:Array<{id:string;category:string;image_data:string;caption:string}>;totalPaid:number;visitCount:number};
 const money=(value:number)=>new Intl.NumberFormat("ar-IQ").format(value||0)+" د.ع";
-const isTestPatient=(name:string)=>/^test(?:\s|$)/i.test(name.trim());
+const isTestPatient=(name:string)=>/^test$/i.test(name.trim());
 
 export default function AdminPatientsPage(){
  const [auth,setAuth]=useState<boolean|null>(null),[pin,setPin]=useState(""),[error,setError]=useState(""),[query,setQuery]=useState(""),[patients,setPatients]=useState<Patient[]>([]),[selected,setSelected]=useState<RecordData|null>(null),[activeId,setActiveId]=useState(""),[tab,setTab]=useState<"patients"|"accounting">("patients"),[loading,setLoading]=useState(false);
