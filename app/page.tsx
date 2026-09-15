@@ -15,7 +15,7 @@ const services = [
   ["خلع الأسنان", "بإجراءات آمنة ومريحة", "shield"],
 ] as const;
 
-const slots = [{value:"10:00",label:"10:00 صباحًا"},{value:"10:30",label:"10:30 صباحًا"},{value:"11:00",label:"11:00 صباحًا"},{value:"11:30",label:"11:30 صباحًا"},{value:"12:00",label:"12:00 ظهرًا"},{value:"12:30",label:"12:30 ظهرًا"},{value:"16:00",label:"4:00 مساءً"},{value:"16:30",label:"4:30 مساءً"},{value:"17:00",label:"5:00 مساءً"},{value:"17:30",label:"5:30 مساءً"},{value:"18:00",label:"6:00 مساءً"},{value:"18:30",label:"6:30 مساءً"},{value:"19:00",label:"7:00 مساءً"},{value:"19:30",label:"7:30 مساءً"},{value:"20:00",label:"8:00 مساءً"},{value:"20:30",label:"8:30 مساءً"},{value:"21:00",label:"9:00 مساءً"},{value:"21:30",label:"9:30 مساءً"}] as const;
+const slots = [{value:"10:00",label:"10:00 صباحًا"},{value:"10:30",label:"10:30 صباحًا"},{value:"11:00",label:"11:00 صباحًا"},{value:"11:30",label:"11:30 صباحًا"},{value:"12:00",label:"12:00 ظهرًا"},{value:"12:30",label:"12:30 ظهرًا"},{value:"16:00",label:"4:00 مساءً"},{value:"16:30",label:"4:30 مساءً"},{value:"17:00",label:"5:00 مساءً"},{value:"17:30",label:"5:30 مساءً"},{value:"18:00",label:"6:00 مساءً"},{value:"18:30",label:"6:30 مساءً"},{value:"19:00",label:"7:00 مساءً"},{value:"19:30",label:"7:30 مساءً"},{value:"20:00",label:"8:00 مساءً"},{value:"20:30",label:"8:30 مساءً"},{value:"21:00",label:"9:00 مساءً"},{value:"21:30",label:"9:30 مساءً"},{value:"22:00",label:"10:00 مساءً"}] as const;
 
 function Icon({ name, size = 22 }: { name: string; size?: number }) {
   const common = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
