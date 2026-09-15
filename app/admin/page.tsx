@@ -6,6 +6,17 @@ import "./admin.css";
 type Patient={id:string;fullName:string;phone:string;age?:number;medicalCondition?:string;visitCount:number;totalPaid:number};
 type RecordData={patient:{full_name:string;display_phone:string};bookings:Array<{id:string;appointment_date:string;start_time:string;end_time?:string;status:string;reference_number?:string}>;profile:{age?:number;medical_condition?:string;doctor_notes?:string;prescribed_treatment?:string};visits:Array<{id:string;session_number:number;visit_date:string;treatment:string;notes:string;status:string;amount_iqd:number}>;photos?:Array<{id:string;category:string;image_data:string;caption:string}>;totalPaid:number;visitCount:number};
 const money=(value:number)=>new Intl.NumberFormat("ar-IQ").format(value||0)+" د.ع";
+const waNumber=(phone:string)=>{const digits=phone.replace(/\D/g,"");return digits.startsWith("0")?"964"+digits.slice(1):digits.startsWith("964")?digits:digits};
+const weekday=(date:string)=>["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"][new Date(date+"T12:00:00").getDay()];
+const dateText=(date:string)=>new Date(date+"T12:00:00").toLocaleDateString("ar-IQ");
+const timeText=(value:string)=>{const [h,m]=String(value).slice(0,5).split(":").map(Number);const period=h<12?"صباحًا":"مساءً";const hour=h%12||12;return `${hour}:${String(m).padStart(2,"0")} ${period}`};
+const whatsappMessage=(action:string,name:string,date:string,start:string)=>action==="confirm"
+ ? `السلام عليكم، تم تأكيد الحجز باسم ${name} في يوم ${weekday(date)} المصادف ${dateText(date)} في الساعة ${timeText(start)}.
+
+يرجى الحضور قبل الموعد بنصف ساعة.`
+ : `السلام عليكم، نرجو الاعتذار من حضراتكم، تم تأجيل الجلسة لظرف طارئ، وسيكون موعد الجلسة الجديد في يوم ${weekday(date)} المصادف ${dateText(date)} في الساعة ${timeText(start)}.
+
+يرجى إرسال رسالة لتأكيد موعد الجلسة الجديد.`;
 
 export default function AdminPatientsPage(){
  const [auth,setAuth]=useState<boolean|null>(null),[pin,setPin]=useState(""),[error,setError]=useState(""),[query,setQuery]=useState(""),[patients,setPatients]=useState<Patient[]>([]),[selected,setSelected]=useState<RecordData|null>(null),[activeId,setActiveId]=useState(""),[tab,setTab]=useState<"patients"|"accounting">("patients"),[loading,setLoading]=useState(false);
@@ -17,7 +28,7 @@ export default function AdminPatientsPage(){
  const openPatient=async(id:string)=>{setActiveId(id);const r=await fetch("/api/admin/patients/"+id,{cache:"no-store"});const d=await r.json();if(!r.ok){setError(d.error||"تعذر تحميل الملف");return}setSelected(d);setProfile({age:d.profile?.age?String(d.profile.age):"",medicalCondition:d.profile?.medical_condition||"",doctorNotes:d.profile?.doctor_notes||"",prescribedTreatment:d.profile?.prescribed_treatment||""})};
  const loadAccounting=async()=>{const r=await fetch("/api/admin/accounting",{cache:"no-store"});const d=await r.json();if(r.ok)setAccounting(d);else setError(d.error||"تعذر تحميل الحسابات")};
  const deletePatient=async()=>{if(!selected)return;if(!window.confirm("هل تريد حذف ملف هذا المراجع؟ سيتم حذف الجلسات والصور والحسابات المرتبطة به نهائيًا."))return;const r=await fetch("/api/admin/patients/"+activeId,{method:"DELETE"});const d=await r.json();if(!r.ok){setError(d.error||"تعذر حذف ملف المراجع");return}setSelected(null);setActiveId("");setError("تم حذف ملف المراجع");loadPatients()};
- const bookingAction=async(id:string,action:string,date?:string,start?:string)=>{if(!window.confirm(action==="confirm"?"هل تريد تأكيد هذا الحجز؟":"هل تريد تأجيل الحجز إلى الموعد الجديد؟"))return;const r=await fetch("/api/admin/appointment-action",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({appointmentId:id,action,date,startTime:start})});const d=await r.json();if(!r.ok){setError(d.error||"تعذر تحديث الحجز");return}setError(action==="confirm"?"تم تأكيد الحجز":"تم تأجيل الحجز وتحديث وقته");setReschedule(null);if(activeId)openPatient(activeId)};
+ const bookingAction=async(id:string,action:string,date?:string,start?:string)=>{if(!window.confirm(action==="confirm"?"هل تريد تأكيد هذا الحجز؟":"هل تريد تأجيل الحجز إلى الموعد الجديد؟"))return;const r=await fetch("/api/admin/appointment-action",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({appointmentId:id,action,date,startTime:start})});const d=await r.json();if(!r.ok){setError(d.error||"تعذر تحديث الحجز");return}const message=whatsappMessage(action,d.fullName,d.appointmentDate,d.startTime);window.open("https://wa.me/"+waNumber(d.phone)+"?text="+encodeURIComponent(message),"_blank","noopener,noreferrer");setError(action==="confirm"?"تم تأكيد الحجز وفتح رسالة واتساب":"تم تأجيل الحجز وفتح رسالة واتساب");setReschedule(null);if(activeId)openPatient(activeId)};
  useEffect(()=>{fetch("/api/admin/patients").then(r=>setAuth(r.ok));},[]);
  useEffect(()=>{if(auth)loadPatients()},[auth]);
  useEffect(()=>{if(auth&&tab==="accounting")loadAccounting()},[auth,tab]);
