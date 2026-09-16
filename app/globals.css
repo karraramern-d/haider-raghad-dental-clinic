@@ -29,3 +29,18 @@ body{background:#f8f8f2}
 .admin-shell{background:#f1f3ec}.admin-login{background:var(--mock-paper);border-radius:30px;box-shadow:0 22px 55px rgba(35,69,47,.12)}.admin-topbar{background:var(--mock-green);color:#fff;border:0;border-radius:24px;padding:24px 28px;margin-bottom:18px}.admin-topbar h1,.admin-topbar .eyebrow{color:#fff}.admin-topbar p{color:#d5e0d0}.admin-top-actions .secondary-button{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff}.admin-summary>div,.admin-list{background:var(--mock-paper);border-radius:22px}.admin-appointment{background:#fbfcf8;border-radius:18px}
 .chat-trigger,.chat-overlay{display:none!important}
 @media(max-width:800px){.site-header{height:76px}.site-header .header-brand img{width:94px}.hero{padding-top:14px}.hero-frame{border-radius:24px}.hero h1{font-size:clamp(35px,10vw,48px)}.hero-actions{display:flex;flex-direction:column}.hero-actions .primary-button,.hero-actions .secondary-button{width:100%}.hero-note{font-size:10px}.admin-topbar{margin-inline:-2px;padding:20px 18px;border-radius:20px}.admin-topbar h1{font-size:34px}.admin-top-actions{display:flex}.admin-top-actions button{flex:1}}
+
+@media(max-width:800px){
+  .site-header{width:calc(100% - 32px);height:82px}
+  .hero{width:calc(100% - 32px);padding:18px 0 118px;gap:18px}
+  .hero-visual{width:100%;margin:0}
+  .hero-frame{width:100%;aspect-ratio:1.62/1;border-radius:24px}
+  .hero-copy{padding:0 2px}
+  .hero-copy .eyebrow{font-size:12px;margin-top:2px}
+  .hero h1{font-size:clamp(34px,9.6vw,44px);line-height:1.2;letter-spacing:-.06em;margin:12px 0 10px}
+  .hero-copy>p{font-size:13px;line-height:1.75;margin-bottom:18px}
+  .hero-actions{gap:9px}.hero-actions .primary-button{min-height:48px;font-size:14px}.hero-actions .secondary-button{min-height:44px;font-size:13px}
+  .hero-note{margin-top:16px;gap:8px;font-size:10px}
+  .hero-index{display:none}
+  .bottom-nav{bottom:10px;left:16px;right:16px;padding:8px 6px;border-radius:25px}
+}
