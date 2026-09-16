@@ -13,14 +13,14 @@ const replies = (text: string) => {
 
 export async function POST(request: Request) {
   try {
-    const { messages } = await request.json();
+    const { messages, audio } = await request.json();
     const latest = String(Array.isArray(messages) ? messages.at(-1)?.content || "" : "").trim();
     if (!latest) return NextResponse.json({ error: "اكتب رسالتك أولاً" }, { status: 400 });
     const key = process.env.GEMINI_API_KEY;
     if (!key) return NextResponse.json({ message: replies(latest), mode: "clinic" });
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ system_instruction: { parts: [{ text: "أنت مساعد عيادة الدكتور حيدر رغد في بغداد - الحرية. أجب بالعربية العراقية باختصار. الدوام السبت إلى الخميس 10ص-1م و4م-10م، الجمعة عطلة. الحجز من الموقع والتأكيد من العيادة. لا تخترع أسعاراً أو مواعيد، ولا تشخص أو تصف دواء، ووجّه الطوارئ للاتصال 07707960430." }] }, contents: (messages || []).slice(-8).map((m: { role: string; content: string }) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })), generationConfig: { temperature: 0.35, maxOutputTokens: 220 } }),
+      body: JSON.stringify({ system_instruction: { parts: [{ text: "أنت مساعد عيادة الدكتور حيدر رغد في بغداد - الحرية. أجب بالعربية العراقية باختصار. الدوام السبت إلى الخميس 10ص-1م و4م-10م، الجمعة عطلة. الحجز من الموقع والتأكيد من العيادة. لا تخترع أسعاراً أو مواعيد، ولا تشخص أو تصف دواء، ووجّه الطوارئ للاتصال 07707960430. إذا وصلتك رسالة صوتية، افهم كلامها أولاً ثم أجب بالنص." }] }, contents: (messages || []).slice(-8).map((m: { role: string; content: string }, index: number) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }, ...(audio && index === (messages || []).length - 1 ? [{ inline_data: { mime_type: audio.mimeType, data: audio.data } }] : [])] })), generationConfig: { temperature: 0.35, maxOutputTokens: 220 } }),
     });
     if (!response.ok) return NextResponse.json({ message: replies(latest), mode: "clinic" });
     const data = await response.json();
