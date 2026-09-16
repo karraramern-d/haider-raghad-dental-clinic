@@ -46,7 +46,7 @@ body{background:#f8f8f2}
 }
 
 /* Mockup structure: editorial header, centered hero, trust strip and services. */
-.mockup-topline{display:flex;align-items:center;gap:14px;color:#8a9782;font-size:12px;direction:ltr;width:100%;padding:0 8px 10px;border-bottom:1px solid rgba(35,69,47,.2)}
+.mockup-topline{display:flex;align-items:center;gap:14px;color:#8a9782;font-size:12px;direction:ltr;width:100%;grid-column:1 / -1;padding:0 8px 10px;border-bottom:1px solid rgba(35,69,47,.2)}
 .mockup-topline i{height:1px;background:#b8c2b1;flex:1}.mockup-topline span:last-child{direction:rtl;white-space:nowrap}
 .hero-copy .hero-note{background:rgba(255,254,251,.82);border:1px solid rgba(35,69,47,.12);border-radius:20px;padding:13px 12px;margin-top:24px;justify-content:space-around;gap:8px;box-shadow:0 8px 22px rgba(35,69,47,.07)}
 .hero-note span{font-size:11px;color:#667461;flex-direction:column;gap:3px;text-align:center}.hero-note svg{width:22px;height:22px}
