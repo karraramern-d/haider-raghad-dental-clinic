@@ -3,7 +3,6 @@
 import { FormEvent, useRef, useState } from "react";
 
 type Message = { role: "user" | "assistant"; content: string };
-type VoiceWindow = Window & { MediaRecorder?: typeof MediaRecorder };
 
 const MicIcon = ({ off = false }: { off?: boolean }) => <svg viewBox="0 0 24 24" aria-hidden="true"><path d={off ? "M4 4l16 16M10 5.5a3 3 0 0 1 5 2.1v3M6.8 10v1.3a5.2 5.2 0 0 0 9 3.6M12 19v-2M8.5 19h7" : "M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3Zm6 8a6 6 0 0 1-12 0m6 6v4m-3 0h6"} /></svg>;
 const SendIcon = () => <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 4 16 8-16 8 3-8-3-8Zm3 8h13" /></svg>;
