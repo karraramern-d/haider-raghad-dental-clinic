@@ -3,14 +3,7 @@
 import { FormEvent, useRef, useState } from "react";
 
 type Message = { role: "user" | "assistant"; content: string };
-type RecognitionEvent = { results: ArrayLike<ArrayLike<{ transcript: string }>> };
-type Recognition = {
-  lang: string; interimResults: boolean; maxAlternatives: number;
-  onresult: ((event: RecognitionEvent) => void) | null;
-  onerror: ((event: { error?: string }) => void) | null;
-  onend: (() => void) | null; start: () => void; stop: () => void;
-};
-type VoiceWindow = Window & { SpeechRecognition?: new () => Recognition; webkitSpeechRecognition?: new () => Recognition };
+type VoiceWindow = Window & { MediaRecorder?: typeof MediaRecorder };
 
 const MicIcon = ({ off = false }: { off?: boolean }) => <svg viewBox="0 0 24 24" aria-hidden="true"><path d={off ? "M4 4l16 16M10 5.5a3 3 0 0 1 5 2.1v3M6.8 10v1.3a5.2 5.2 0 0 0 9 3.6M12 19v-2M8.5 19h7" : "M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3Zm6 8a6 6 0 0 1-12 0m6 6v4m-3 0h6"} /></svg>;
 const SendIcon = () => <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 4 16 8-16 8 3-8-3-8Zm3 8h13" /></svg>;
@@ -33,14 +26,14 @@ export default function ClinicChatbot() {
     window.speechSynthesis.speak(u);
   };
 
-  const send = async (event?: FormEvent, preset?: string) => {
+  const send = async (event?: FormEvent, preset?: string, audio?: { data: string; mimeType: string }) => {
     event?.preventDefault();
     const content = (preset ?? input).trim();
-    if (!content || loading) return;
-    const next = [...messages, { role: "user" as const, content }];
-    setMessages(next); setInput(""); setLoading(true);
+    if ((!content && !audio) || loading) return;
+    const next = [...messages, { role: "user" as const, content: content || "رسالة صوتية" }];
+    setMessages(next); setInput(""); setLoading(true); setVoiceError("");
     try {
-      const response = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: next }) });
+      const response = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: next, audio }) });
       const data = await response.json(), answer = data.message || "تعذر الرد حالياً.";
       setMessages([...next, { role: "assistant", content: answer }]); speak(answer);
     } catch {
@@ -49,23 +42,41 @@ export default function ClinicChatbot() {
     } finally { setLoading(false); }
   };
 
-  const toggleListening = () => {
-    if (listening) { recognitionRef.current?.stop(); setListening(false); return; }
-    const w = window as VoiceWindow, RecognitionAPI = w.SpeechRecognition ?? w.webkitSpeechRecognition;
-    if (!RecognitionAPI) return window.alert("التحدث الصوتي غير مدعوم. افتح الموقع بآخر إصدار من Google Chrome.");
-    const recognition = new RecognitionAPI();
-    recognition.lang = "ar-IQ"; recognition.interimResults = false; recognition.maxAlternatives = 1;
-    recognition.onresult = (event) => { const text = event.results[0]?.[0]?.transcript?.trim(); if (text) { setInput(text); void send(undefined, text); } };
-    recognition.onerror = (event) => {
-      setListening(false); recognitionRef.current = null;
-      window.alert(event.error === "not-allowed" ? "اسمح للموقع باستخدام المايك من إعدادات المتصفح." : event.error === "no-speech" ? "ما سمعت صوتك، حاول مرة ثانية." : "تعذر تشغيل المايك.");
-    };
-    recognition.onend = () => { setListening(false); recognitionRef.current = null; };
-    recognitionRef.current = recognition; setListening(true);
-    try { recognition.start(); } catch { setListening(false); recognitionRef.current = null; }
+  const toggleListening = async () => {
+    if (listening) { recorderRef.current?.stop(); return; }
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      setVoiceError("التسجيل الصوتي غير مدعوم بهذا المتصفح. افتح الموقع بآخر إصدار من Chrome.");
+      return;
+    }
+    try {
+      setVoiceError("");
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      chunksRef.current = [];
+      recorder.ondataavailable = (event) => { if (event.data.size) chunksRef.current.push(event.data); };
+      recorder.onstop = () => {
+        stream.getTracks().forEach((track) => track.stop());
+        setListening(false);
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = String(reader.result || "");
+          const data = result.includes(",") ? result.split(",")[1] : result;
+          if (data) void send(undefined, undefined, { data, mimeType: blob.type || "audio/webm" });
+        };
+        reader.readAsDataURL(blob);
+        recorderRef.current = null;
+      };
+      recorder.start();
+      recorderRef.current = recorder;
+      setListening(true);
+    } catch {
+      setVoiceError("ما قدرنا نوصل للمايك. افتح صلاحية المايك من إعدادات المتصفح وحاول مرة ثانية.");
+      setListening(false);
+    }
   };
 
-  const close = () => { recognitionRef.current?.stop(); window.speechSynthesis?.cancel(); setListening(false); setSpeaking(false); setOpen(false); };
+  const close = () => { recorderRef.current?.stop(); window.speechSynthesis?.cancel(); setListening(false); setSpeaking(false); setOpen(false); };
 
   return <>
     <button className="chat-trigger" onClick={() => setOpen(true)} aria-label="فتح مساعد العيادة">
@@ -88,7 +99,7 @@ export default function ClinicChatbot() {
           <button type="button" className={`chat-mic ${listening ? "listening" : ""}`} onClick={toggleListening} disabled={loading} aria-label={listening ? "إيقاف التسجيل" : "تحدث صوتياً"}><MicIcon off={!listening} /></button>
           <button type="submit" className="chat-send" disabled={loading || !input.trim()} aria-label="إرسال"><SendIcon /></button>
         </form>
-        <div className={`chat-voice-state ${listening || speaking ? "active" : ""}`}>{listening ? <><span className="voice-bars"><i /><i /><i /><i /><i /></span> دا أسمعك…</> : speaking ? "🔊 دا أقرأ الرد" : "اضغط المايك واحچي باللهجة العراقية"}</div>
+        <div className={`chat-voice-state ${listening || speaking ? "active" : ""}`}>{listening ? <><span className="voice-bars"><i /><i /><i /><i /><i /></span> دا أسجل صوتك… اضغط للإرسال</> : speaking ? "🔊 دا أقرأ الرد" : voiceError || "اضغط المايك وسجّل سؤالك باللهجة العراقية"}</div>
         <a className="chat-whatsapp" href="https://wa.me/9647707960430" target="_blank" rel="noreferrer">تواصل مباشرة عبر واتساب <span>↗</span></a>
       </section>
     </div>}
